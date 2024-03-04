@@ -1,0 +1,8 @@
+/venv*
+.vscode
+.idea
+.editorconfig
+__pycache__
+.
+/build*
+/dist
