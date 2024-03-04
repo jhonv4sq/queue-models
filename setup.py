@@ -1,8 +1,8 @@
 from distutils.core import setup
 import py2exe
-from model.queue import Queue
-from probability import *
-from table import *
+from src.model.queue import Queue
+from src.probability import *
+from src.table import show_pn_table
 
 setup(zipFile=None,
       options={'py2exe': {'bundle_files': 1}},

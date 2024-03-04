@@ -1,6 +1,6 @@
-from model.queue import Queue
-from probability import *
-from table import *
+from src.model.queue import Queue
+from src.probability import *
+from src.table import show_pn_table
 
 
 def main():
