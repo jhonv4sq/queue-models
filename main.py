@@ -1,11 +1,11 @@
 from src.model.queue import Queue
 from src.probability import *
 from src.table import show_pn_table
+from src.pdf import create_pdf
 
 
 def main():
     limit = 0
-    time = 0
 
     unlimited = input("(Y) con limite, (N) sin limite: ").capitalize()
 
@@ -45,6 +45,7 @@ def main():
     array = get_pn(queue)[0]
     show_pn_table(array)
 
+    # create_pdf(get_data(queue))
     input("\n precione enter para finalizar")
 
 

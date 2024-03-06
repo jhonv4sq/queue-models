@@ -1,6 +1,5 @@
 import json
 
-
 def show_pn_table(datas):
     print('\nN  Pn  Sum pn')
     for pn in datas:

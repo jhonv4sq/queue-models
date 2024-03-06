@@ -67,7 +67,7 @@ def get_pn(queue):
     unlimited = queue.unlimited
 
     while stop:
-        
+
         pn = po * pow(ρ, n)
 
         totals += pn
@@ -150,3 +150,36 @@ def get_wq(queue):
     else:
         return lq / λ
 
+
+def get_data(queue):
+
+    data = {}
+
+    if queue.unlimited == True:
+        data = {
+            'λ': round(queue.λ, 3),
+            'µ': round(queue.µ, 3),
+            'ρ': round(queue.ρ, 3),
+            'Po': round(get_po(queue), 3),
+            'Pn': round(get_pn(queue)[1], 3),
+            'Ls': round(get_ls(queue), 3),
+            'Lq': round(get_lq(queue), 3),
+            'Ws': round(get_ws(queue), 3),
+            'Wq': round(get_wq(queue), 3),
+            'λ_efec': get_lambda_efec(queue),
+            'λ_perd': get_lambda_perd(queue)
+        }
+    else:
+        data = {
+            'λ': round(queue.λ, 3),
+            'µ': round(queue.µ, 3),
+            'ρ': round(queue.ρ, 3),
+            'Po': round(get_po(queue), 3),
+            'Pn': round(get_pn(queue)[1], 3),
+            'Ls': round(get_ls(queue), 3),
+            'Lq': round(get_lq(queue), 3),
+            'Ws': round(get_ws(queue), 3),
+            'Wq': round(get_wq(queue), 3),
+        }
+
+    return data
