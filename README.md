@@ -10,3 +10,5 @@ pip install -r "./requirements.txt"
 ```bash
 python setup.py py2exe
 ```
+
+https://wkhtmltopdf.org/downloads.html
