@@ -56,5 +56,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # queue = Queue(True, 100, 30, 4, 120)
-    # print(get_lq(queue))

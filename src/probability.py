@@ -21,7 +21,50 @@ def get_po(queue): # Probabilidad de que el sistema este ocupado
         return po
 
     else:
+        if queue.unlimited == True:
+            chance = 0
+            div = ρ / server
 
+            pow1 = pow(ρ, server)
+            data = limit - server + 1
+
+            if div == 1:
+                fact = factorial(server)
+                div = pow1 / fact
+
+                chance = div * data
+            else:
+                pow2 = pow(div, data)
+                res1 = 1 - pow2
+                data1 = pow1 * res1
+
+                fact = factorial(server)
+                res2 = 1 - div
+                data2 = fact * res2
+
+                chance = data1 / data2
+        else:
+            pow1 = pow(ρ, server)
+            fact = factorial(server)
+            div = ρ / server
+            res = 1 - div
+            data = fact * res
+
+            chance = pow1 / data
+
+        cont = 0
+        totals = 0
+
+        while cont < server:
+            pow1 = pow(ρ, cont)
+            fact1 = factorial(cont)
+            data = pow1 / fact1
+            totals += data
+
+            cont += 1
+        sum1 = totals + chance
+
+        return pow(sum1, -1)
 
 
 def get_pn_array(queue):
@@ -90,7 +133,15 @@ def get_pn(queue, clientAmount= 0):
 
                 return div * po
         else:
-
+            if clientAmount > server:
+                res = clientAmount - server
+                pow2 = pow(server, res)
+                fact = factorial(server)
+                mul = pow2 * fact
+                return pow1 / mul * po
+            else:
+                fact = factorial(clientAmount)
+                return pow1 / fact * po
 
 
 def get_ls(queue):
