@@ -1,62 +1,30 @@
 import json
+from src.model.queue import Queue
 
 def get_po(queue): # Probabilidad de que el sistema este ocupado
     ρ = queue.ρ
+    limit = queue.limit
+    server = queue.server
 
-    if queue.unlimited == True:
-        limit = queue.limit
-
-        if ρ == 1:
-            po = 1 / (limit + 1)
+    if server == 1:
+        if queue.unlimited == True:
+            if ρ == 1:
+                po = 1 / (limit + 1)
+            else:
+                data1 = 1 - ρ
+                pow1 =  pow(ρ, limit + 1)
+                data2 = 1 - pow1
+                po = data1 / data2
         else:
-            data1 = 1 - ρ
-            pow1 =  pow(ρ, limit + 1)
-            data2 = 1 - pow1
-            po = data1 / data2
+            po = 1 - queue.ρ
+
+        return po
+
     else:
-        po = 1 - queue.ρ
-
-    return po
 
 
-def probability_first_clinet(queue): # Probabilidad de ser el primer cliente en la cola
-    λ = queue.λ / 60
-    µ = queue.µ / 60
-    ρ = λ / µ
-    probability = get_po(queue) * ρ
-    return probability
 
-
-def customers_in_queue(queue): # Numero promedio de cliente en la cola
-    time = int(input("Tiempo de espera en la cola en minutos: ")) # 2
-    λ = queue.λ / 60
-    µ = queue.µ / 60
-    ρ = λ / µ
-    customers = λ * time
-    return round(customers)
-
-
-def probability_four_clinets(queue): # probabilidad de que haya 4 clientes en la cola
-    λ = queue.λ / 60
-    µ = queue.µ / 60
-    ρ = λ / µ
-    probability = get_po(queue) * pow(ρ, 4)
-    return probability
-
-
-def limit_lost_clinet(queue): # Probabilidad de que un cliente llegue y no sea atendido porque este lleno
-    data1 = 1 - queue.ρ
-    pow1 = pow(queue.ρ, queue.limit)
-    data2 = data1 * pow1
-
-    pow2 = pow(queue.ρ, queue.limit+1)
-    data3 = 1-pow2
-
-    probability = data2 / data3
-    return probability
-
-
-def get_pn(queue):
+def get_pn_array(queue):
     data = []
     stop = True
     totals = 0
@@ -65,10 +33,14 @@ def get_pn(queue):
     po = get_po(queue)
     ρ = queue.ρ
     unlimited = queue.unlimited
+    server = queue.server
 
     while stop:
 
-        pn = po * pow(ρ, n)
+        if server == 1:
+            pn = po * pow(ρ, n)
+        else:
+            pn = get_pn(queue, n)
 
         totals += pn
         info = {
@@ -86,33 +58,75 @@ def get_pn(queue):
         else:
             if round(pn, 4) == 0.0000:
                 stop = False
-
         pn = 0
 
-    return [data, len(data) - 1]
+    return data
+
+
+def get_pn(queue, clientAmount= 0):
+    server = queue.server
+
+    if server == 1:
+        return len(get_pn_array(queue)) - 1
+    else:
+        unlimited = queue.unlimited
+        ρ = queue.ρ
+        λ = queue.λ
+        po = get_po(queue)
+        pow1 = pow(ρ, clientAmount)
+
+        if unlimited == True:
+            if (clientAmount >= 0) and (clientAmount <= server):
+                fact = factorial(clientAmount)
+                div = pow1 / fact
+
+                return div * po
+            else:
+                fact = factorial(server)
+                res = clientAmount - server
+                pow2 = pow(server, res)
+                mul = fact * pow2
+                div = pow1 / mul
+
+                return div * po
+        else:
+
 
 
 def get_ls(queue):
     limit = queue.limit
+    server = queue.server
     po = get_po(queue)
     ρ = queue.ρ
+    unlimited = queue.unlimited
 
-    if queue.unlimited == True:
-        if ρ != 1:
-            # (results.rho * (1 - ((form.limite_cola + 1) * (results.rho ** form.limite_cola)) + (form.limite_cola * (results.rho ** (form.limite_cola + 1)))))
-            data1 = (ρ * (1 - ((limit + 1) * pow(ρ, limit)) + (limit * pow(ρ, limit +1))))
-            data2 = ((1 - ρ) * (1 - pow(ρ, limit + 1)))
-            return data1 / data2
+    if server == 1:
+        if unlimited == True:
+            if ρ != 1:
+                data1 = (ρ * (1 - ((limit + 1) * pow(ρ, limit)) + (limit * pow(ρ, limit +1))))
+                data2 = ((1 - ρ) * (1 - pow(ρ, limit + 1)))
+                return data1 / data2
+            else:
+                return limit / 2
         else:
-            return limit / 2
-
+            return ρ / po
     else:
-        return ρ / po
+        lq = get_lq(queue)
+        if unlimited == True:
+            lambdaEfec = get_lambda_efec(queue)
+            div = lambdaEfec / queue.µ
+
+            return lq + div
+        else:
+            return lq + ρ
 
 
 def get_lambda_efec(queue):
-    data = json.loads(get_pn(queue)[0][queue.limit])
-    return queue.λ * (1 - data['pn'])
+    data = json.loads(get_pn_array(queue)[queue.limit])
+    if queue.server == 1:
+        return queue.λ * (1 - data['pn'])
+    else:
+        return queue.λ * (1 - get_pn(queue, queue.limit))
 
 
 def get_lambda_perd(queue):
@@ -120,33 +134,79 @@ def get_lambda_perd(queue):
 
 
 def get_lq(queue):
-    ls = get_ls(queue)
     ρ = queue.ρ
+    limit = queue.limit
+    server = queue.server
+    unlimited = queue.unlimited
 
-    if queue.unlimited == True:
-        data = get_lambda_efec(queue) / queue.µ
-        return ls - data
+    if server == 1:
+        ls = get_ls(queue)
+        if unlimited == True:
+            data = get_lambda_efec(queue) / queue.µ
+            return ls - data
+        else:
+            return ls - ρ
     else:
-        return ls - ρ
+        div = ρ / server
+        if unlimited == True:
+            po = get_po(queue)
+            if div == 1:
+                pow1 = pow(ρ, server)
+                res1 = limit - server
+                res2 = limit - server + 1
+                mul1 = pow1 * res1 * res2
+
+                fact = factorial(server)
+                mul2 = 2 * fact
+
+                div = mul1 / mul2
+                return po * div
+            else:
+                sum1 = server + 1
+                pow1 = pow(ρ, sum1)
+
+                res1 = server - 1
+                fact = factorial(res1)
+                res2 = server - ρ
+                pow2 = pow(res2, 2)
+                mul1 = fact * pow2
+
+                div = pow1 / mul1
+                return po * div
+        else:
+            pn = get_pn(queue, server)
+
+            div = (server * ρ) / pow(server - ρ, 2)
+            return div * pn
 
 
 def get_ws(queue):
+    server = queue.server
+    unlimited = queue.unlimited
     ls = get_ls(queue)
-    λ = queue.λ
+    wq = get_wq(queue)
 
-    if queue.unlimited == True:
-        data = 1 / queue.µ
-        return get_wq(queue) / data
+    if server == 1:
+        if unlimited == True:
+            data = 1 / queue.µ
+            return wq / data
+        else:
+            return ls / queue.λ
     else:
-        return ls / λ
+        div = 1 / queue.µ
+        return wq + div
 
 
 def get_wq(queue):
     lq = get_lq(queue)
     λ = queue.λ
+    server = queue.server
 
-    if queue.unlimited == True:
-        return get_lq(queue) / get_lambda_efec(queue)
+    if server == 1:
+        if queue.unlimited == True:
+            return get_lq(queue) / get_lambda_efec(queue)
+        else:
+            return lq / λ
     else:
         return lq / λ
 
@@ -183,3 +243,10 @@ def get_data(queue):
         }
 
     return data
+
+
+def factorial(number):
+    if number != 0:
+        return number * factorial(number - 1)
+    else:
+        return 1
