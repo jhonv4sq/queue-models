@@ -50,7 +50,11 @@ def main():
     array = get_pn_array(queue)
     show_pn_table(array)
 
-    # create_pdf(get_data(queue))
+    question = input("\n Quieres descargar pdf? (Y | N): ").capitalize()
+
+    if question == 'Y':
+        create_pdf(get_data(queue), array)
+
     input("\n precione enter para finalizar")
 
 
