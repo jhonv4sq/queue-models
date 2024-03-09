@@ -3,7 +3,6 @@
 .idea
 .editorconfig
 __pycache__
-.
 /build*
 /dist
 queue.pdf
