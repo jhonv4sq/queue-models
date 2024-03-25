@@ -15,5 +15,5 @@ class Queue:
         self.ρ = self.get_rho()
 
     def get_rho(self):
-        ρ = self.λ / self.µ
+        ρ = self.µ / self.λ
         return ρ
